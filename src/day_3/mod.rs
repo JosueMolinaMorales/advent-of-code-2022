@@ -98,5 +98,5 @@ fn part_1() {
     })
     .sum();
 
-println!("Part 1 result: {}", res);
+    println!("Part 1 result: {}", res);
 }
