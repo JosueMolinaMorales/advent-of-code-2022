@@ -1,6 +1,5 @@
 use std::{fs, collections::HashMap};
 
-const TEST_FILE: &str = "./input3.txt";
 const INPUT_FILE: &str = "./inputs/day_3_input.txt";
 
 trait CharacterValue {
@@ -92,11 +91,9 @@ fn part_1() {
                     break;
                 }
             }
-            // println!("Letter count hash is: {:?}", letter_count);
         }
 
         // Calculate
-        // println!("Matching character for {} is {}", sack, matching_character);
         matching_character.get_value()
     })
     .sum();
