@@ -31,7 +31,6 @@ pub fn solve_day_seven() {
                 }
                 if dir_name == "/" {
                     directory_structure.insert("/".to_string(), Directory { name: "/".to_string(), size: 0, children: Vec::new() });
-                    continue;
                 }
 
                 stack.push(dir_name);
@@ -44,25 +43,25 @@ pub fn solve_day_seven() {
                         let dir_name = output[1].to_string();
 
                         directory_structure
-                        .entry(format!("/{}/{}", stack.join("/"), dir_name.clone()))
+                        .entry(format!("{}/{}", stack.join("/"), dir_name.clone()))
                         .or_insert(Directory {
-                            name: format!("/{}/{}", stack.join("/"), dir_name.clone()),
+                            name: format!("{}/{}", stack.join("/"), dir_name.clone()),
                             size: 0,
                             children: Vec::new()
                         });
 
                         // add dir as a child of the current directory
                         directory_structure
-                            .entry(format!("/{}", stack.join("/")))
+                            .entry(format!("{}", stack.join("/")))
                             .and_modify(|dir| {
-                                dir.children.push(format!("/{}/{}", stack.join("/"), dir_name.clone()));
+                                dir.children.push(format!("{}/{}", stack.join("/"), dir_name.clone()));
                             });
                         
                     },
                     size => {
                         let size = size.parse::<u32>().unwrap(); 
                         directory_structure
-                            .entry(format!("/{}", stack.join("/")))
+                            .entry(format!("{}", stack.join("/")))
                             .and_modify(|dir| {
                                 dir.size += size;
                             });
@@ -72,24 +71,35 @@ pub fn solve_day_seven() {
         }
     }
 
-    let mut sums = vec![0; directory_structure.keys().len()]; // preallocate dir sizes
-    for (idx, dir) in directory_structure.keys().enumerate() {
-        for subdir in directory_structure.keys().filter(|subdir| subdir.starts_with(dir)) {
-            let subdir_contents = directory_structure.get(subdir).unwrap();
-            sums[idx] += subdir_contents.size;
-        }
+    let mut sizes = vec![];
+    for dir in directory_structure.keys() {
+        let size = directory_size(&directory_structure, dir);
+        sizes.push(size);
     }
 
-    let res = sums.iter().filter(|s| **s < 100000).sum::<u32>();
+    let res = sizes.iter().filter_map(|s| if s.1 < 100000 { Some(s.1) } else { None }).sum::<u32>();
     println!("part 1 res: {}", res);
 
+    sizes.sort();
     let total_space_available = 70_000_000;
     let required_unused_space = 30_000_000;
-    let total_space_used: u32 = sums.iter().max().unwrap().clone();
+    let total_space_used: u32 = sizes.iter().map(|s| s.1).max().unwrap().clone();
     let current_unused_space = total_space_available - total_space_used;
     let amount_to_free = required_unused_space - current_unused_space;
 
-    let  part_two = sums.iter().filter(|size| **size >= amount_to_free).min().unwrap();
+    let  part_two = sizes.iter().map(|s| s.1).filter(|size| *size >= amount_to_free).min().unwrap();
     println!("part 2: {:?}", part_two);
     
+}
+
+fn directory_size(directory_structure: &HashMap<String, Directory>, dir: &str) -> (String, u32) {
+    let mut size = 0;
+
+    let directory = directory_structure.get(dir).unwrap();
+    for child in &directory.children {
+        size += directory_size(directory_structure, child).1;
+    }
+    size += directory.size;
+
+    (directory.name.clone(), size)
 }
