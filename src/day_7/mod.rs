@@ -1,6 +1,6 @@
-use std::{fs, collections::{BTreeMap, HashMap}};
+use std::{fs, collections::HashMap };
 
-const TEST_INPUT: &str = "./input7.txt";
+// const TEST_INPUT: &str = "./input7.txt";
 const INPUT_FILE: &str = "./inputs/day_7_input.txt";
 
 pub fn solve_day_seven() {
@@ -8,13 +8,14 @@ pub fn solve_day_seven() {
     part_one(input);
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Directory {
     name: String,
     size: u32,
     parent: Option<String>,
     children: Vec<String>
 }
+
 
 fn part_one(input: String) {
     let mut directory_structure: HashMap<String, Directory> = HashMap::new();
@@ -32,21 +33,9 @@ fn part_one(input: String) {
                     stack.pop();
                     continue;
                 }
-
-                // Check to see if the dir name is already in struct
-                let (parent, parent_size) = match directory_structure.get(stack.last().unwrap_or(&"".to_string())) {
-                    Some(parent) => (Some(parent.name.clone()), parent.size),
-                    None => (None, 0)
-                };
-
-                directory_structure
-                .entry(dir_name.clone())
-                .or_insert(Directory { 
-                    name: dir_name.clone(),
-                    size: parent_size, 
-                    parent,
-                    children: Vec::new()
-                });
+                if dir_name == "/" {
+                    directory_structure.insert("/".to_string(), Directory { name: "/".to_string(), size: 0, parent: None, children: Vec::new() });
+                }
 
                 stack.push(dir_name);
             },
@@ -55,101 +44,80 @@ fn part_one(input: String) {
                 let output = line.split(" ").map(|s| s.trim()).collect::<Vec<&str>>();
                 match output[0] {
                     "dir" => {
-                        let dir_name = output[1].to_string();
+                        let dir_name = output[1].to_string();  
                         directory_structure
-                        .entry(dir_name.clone())
+                        .entry(format!("{}/{}", stack.join("/"), dir_name.clone()))
                         .and_modify(|dir| {
                             match dir.parent {
                                 None => {
-                                    dir.parent = Some(stack.last().unwrap().clone())
+                                    dir.parent = Some(stack.join("/"))
                                 },
                                 Some(_) => {}
                             }
                         })
                         .or_insert(Directory {
-                            name: dir_name.clone(),
+                            name: format!("{}/{}", stack.join("/"), dir_name.clone()),
                             size: 0,
-                            parent: Some(stack.last().unwrap().clone()),
+                            parent: Some(stack.join("/")),
                             children: Vec::new()
                         });
 
-                        let curr_dir = stack.last().unwrap().clone();
                         // add dir as a child of the current directory
                         directory_structure
-                            .entry(curr_dir.clone())
+                            .entry(stack.join("/"))
                             .and_modify(|dir| {
-                                dir.children.push(dir_name.clone());
+                                dir.children.push(format!("{}/{}", stack.join("/"), dir_name.clone()));
                             });
                         
                     },
                     size => {
-                        let curr_dir = stack.last().unwrap().clone();
                         let size = size.parse::<u32>().unwrap(); 
                         directory_structure
-                            .entry(curr_dir.to_string())
+                            .entry(stack.join("/"))
                             .and_modify(|dir| {
                                 dir.size += size;
                             });
-                        let mut parent_dir = directory_structure.get(&curr_dir).unwrap().parent.clone();
-                        while let Some(parent) = parent_dir.clone() {
-                            directory_structure.entry(parent.clone())
-                            .and_modify(|dir| {
-                                dir.size += size;
-                                parent_dir = dir.parent.clone(); 
-                            });
-                        }
                     }
                 }
             }
         }
     }
 
-
-    let res = directory_structure.iter()
+    for dir in directory_structure.clone().values() {
+        let children = dir.children.clone();
+        for child in children {
+            let child_size = directory_structure.get(&child).unwrap().size;
+            directory_structure
+                .entry(dir.name.clone())
+                .and_modify(|d| {
+                    d.size += child_size 
+                });
+        }   
+    }
+    println!("{:#?}", directory_structure);
+    let res = directory_structure.clone().iter()
     .map(|dir| {
         dir.1.size
     })
     .filter(|size| *size < 100000)
     .sum::<u32>();
     println!("part 1 res: {}", res);
+
+    let total_space_available = 70000000;
+    let required_unused_space = 30000000;
+    let total_space_used: u32 = directory_structure.iter().map(|d| d.1.size).sum();
+    let current_unused_space = total_space_available - total_space_used;
+
+    let mut part_two = directory_structure.iter()
+    .map(|dir| {
+        dir.1.size
+    })
+    .filter(|size| {
+        *size > required_unused_space - current_unused_space
+    })
+    .collect::<Vec<u32>>();
+    part_two.sort();
+    println!("{:?}", part_two);
+    println!("part 2: {:?}", part_two.iter().min().unwrap());
+    
 }
-
-// #[test]
-// fn test_find_sub_dir() {
-//     let mut sub_dir_tree = BTreeMap::new();
-//     sub_dir_tree.insert("D".to_string(), Box::new(Directory {
-//         name: "D".to_string(),
-//         size: None,
-//         sub_directories: BTreeMap::new(),
-//         files: Vec::new(),
-//     }));
-//     let mut dir_tree = BTreeMap::new();
-//     dir_tree.insert("A".to_string(), Box::new(Directory {
-//         name: "A".to_string(),
-//         size: None,
-//         sub_directories: BTreeMap::new(),
-//         files: Vec::new()
-//     }));
-//     dir_tree.insert("B".to_string(), Box::new(Directory {
-//         name: "B".to_string(),
-//         size: None,
-//         sub_directories: BTreeMap::new(),
-//         files: Vec::new()
-//     }));
-//     dir_tree.insert("C".to_string(),Box::new(Directory {
-//         name: "C".to_string(),
-//         size: None,
-//         sub_directories: sub_dir_tree,
-//         files: Vec::new()
-//     }));
-//     let dir_struct = Directory {
-//         name: "/".to_string(),
-//         size: None,
-//         sub_directories: dir_tree,
-//         files: Vec::new()
-//     };
-
-//     let found = dir_struct.find_subdirectory("D".to_string());
-//     assert!(found.is_some());
-//     assert_eq!(found.unwrap().name, "D".to_string())
-// }
