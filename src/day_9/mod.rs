@@ -22,10 +22,10 @@ impl Direction {
 fn simulate_rope(num_knots: u32) {
     let mut head = (0, 0);
     let mut intermediate_knots = vec![(0,0); (num_knots-1).try_into().unwrap()];
-    let mut tail_prev_pos = HashSet::from([intermediate_knots.last().unwrap().clone()]);
+    let mut tail_prev_pos = HashSet::from([*intermediate_knots.last().unwrap()]);
 
     for line in INPUT.lines() {
-        let actions = line.split(" ").collect::<Vec<&str>>();
+        let actions = line.split(' ').collect::<Vec<&str>>();
         let amount = actions[1].parse::<i32>().unwrap();
         let direction = Direction::new(actions[0]);
         for _ in 1..=amount {
@@ -48,12 +48,11 @@ fn simulate_rope(num_knots: u32) {
 
             
             // After move, add position to hash set
-            tail_prev_pos.insert(intermediate_knots.last().unwrap().clone());
+            tail_prev_pos.insert(*intermediate_knots.last().unwrap());
         }
         
 
     }
-    println!("{:?}", head);
     println!("Previous tail count: {}", tail_prev_pos.len());
 }
 

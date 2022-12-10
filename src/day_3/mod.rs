@@ -10,13 +10,13 @@ impl CharacterValue for char {
     fn get_value(&self) -> u32 {
         // println!("char: {}", self);
         let mut value = *self as u32;
-        if value >= 97 && value <= 122 {
+        if (97..=122).contains(&value) {
             // Lowercase letter
-            value = value - 96;
+            value -= 96;
             value
-        } else if value >= 65 && value <= 90 {
+        } else if (65..=90).contains(&value) {
             // Uppercase letter
-            value = value - 38;
+            value -= 38;
             value
         } else {
             0
@@ -36,7 +36,7 @@ fn part_two() {
     let mut matching_characters: Vec<u32> = Vec::new();
 
     fs::read_to_string(INPUT_FILE).unwrap()
-        .split("\n")
+        .split('\n')
         .enumerate()
         .for_each(|(index, line)| {
             let curr_index = (index + 1) % 3;
@@ -73,7 +73,7 @@ fn part_two() {
 
 fn part_1() {
     let res: u32 = fs::read_to_string(INPUT_FILE).unwrap()
-    .split("\n")
+    .split('\n')
     .map(|sack| {
         let len_str = sack.len();
         let mut letter_count: HashMap<char, i32> = HashMap::new();

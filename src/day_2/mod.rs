@@ -61,11 +61,11 @@ pub fn solve_day_two() {
 fn part_two() {
     let result: i32 = fs::read_to_string(FILE_PATH)
     .unwrap()
-    .split("\n")
+    .split('\n')
     .map(|s| s.to_string())
     .map(|line| {
         // Map a line to points
-        let choices = line.split(" ").collect::<Vec<&str>>();
+        let choices = line.split(' ').collect::<Vec<&str>>();
         let elf_choice = *choices.index(0);
         let my_choice = *choices.index(1);
 
@@ -106,11 +106,11 @@ fn part_two() {
 fn part_one() {
     let result: i32 = fs::read_to_string(FILE_PATH)
     .unwrap()
-    .split("\n")
+    .split('\n')
     .map(|s| s.to_string())
     .map(|line| {
         // Map a line to points
-        let choices = line.split(" ").collect::<Vec<&str>>();
+        let choices = line.split(' ').collect::<Vec<&str>>();
         let elf_choice = *choices.index(0);
         let my_choice = *choices.index(1);
         let mut points_earned = match my_choice {

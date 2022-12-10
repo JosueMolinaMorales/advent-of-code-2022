@@ -10,14 +10,14 @@ pub mod day_9;
 pub mod day_10;
 
 fn main() {
-    // day_1::solve_day_one()
-    // day_2::solve_day_two()
-    // day_3::solve_day_3()
-    // day_4::solve_day_four()
-    // day_5::solve_day_five()
-    // day_6::solve_day_six()
-    // day_7::solve_day_seven()
-    // day_8::solve_day_eight()
-    // day_9::solve_day_nine()
+    // day_1::solve_day_one();
+    // day_2::solve_day_two();
+    // day_3::solve_day_3();
+    // day_4::solve_day_four();
+    // day_5::solve_day_five();
+    // day_6::solve_day_six();
+    // day_7::solve_day_seven();
+    // day_8::solve_day_eight();
+    // day_9::solve_day_nine();
     day_10::solve_day_ten()
 }

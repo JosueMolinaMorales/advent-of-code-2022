@@ -17,10 +17,10 @@ pub fn solve_day_seven() {
     let mut directory_structure: HashMap<String, Directory> = HashMap::new();
     let mut stack: Vec<String> = Vec::new(); // Stores the history of directories. 
 
-    for line in input.split("\n") {
-        match line.chars().nth(0).unwrap() {
+    for line in input.split('\n') {
+        match line.chars().next().unwrap() {
             '$' => {
-                let exec = line.split(" ").map(|s| s.trim()).collect::<Vec<&str>>();
+                let exec = line.split(' ').map(|s| s.trim()).collect::<Vec<&str>>();
                 if exec[1] != "cd" {
                     continue
                 }
@@ -37,7 +37,7 @@ pub fn solve_day_seven() {
             },
             _ => {
                 // ls output
-                let output = line.split(" ").map(|s| s.trim()).collect::<Vec<&str>>();
+                let output = line.split(' ').map(|s| s.trim()).collect::<Vec<&str>>();
                 match output[0] {
                     "dir" => {
                         let dir_name = output[1].to_string();
@@ -52,7 +52,7 @@ pub fn solve_day_seven() {
 
                         // add dir as a child of the current directory
                         directory_structure
-                            .entry(format!("{}", stack.join("/")))
+                            .entry(stack.join("/").to_string())
                             .and_modify(|dir| {
                                 dir.children.push(format!("{}/{}", stack.join("/"), dir_name.clone()));
                             });
@@ -61,7 +61,7 @@ pub fn solve_day_seven() {
                     size => {
                         let size = size.parse::<u32>().unwrap(); 
                         directory_structure
-                            .entry(format!("{}", stack.join("/")))
+                            .entry(stack.join("/").to_string())
                             .and_modify(|dir| {
                                 dir.size += size;
                             });
@@ -83,7 +83,7 @@ pub fn solve_day_seven() {
     sizes.sort();
     let total_space_available = 70_000_000;
     let required_unused_space = 30_000_000;
-    let total_space_used: u32 = sizes.iter().map(|s| s.1).max().unwrap().clone();
+    let total_space_used: u32 = sizes.iter().map(|s| s.1).max().unwrap();
     let current_unused_space = total_space_available - total_space_used;
     let amount_to_free = required_unused_space - current_unused_space;
 

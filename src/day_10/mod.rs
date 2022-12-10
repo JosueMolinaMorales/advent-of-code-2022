@@ -1,18 +1,15 @@
 
 const INPUT: &str = include_str!("./day_10_input.txt");
 
-fn calc_signal_strength(cycle_count: &i32, register: &i32) -> i32 {
-    cycle_count * register
-}
 
 fn cycle(cycle_counter: &i32, cycle_check: &mut i32, register: &i32, sum: &mut i32, screen: &mut Vec<&str>) {
     if cycle_counter == cycle_check {
-       *sum += calc_signal_strength(&cycle_counter, &register);
-       *cycle_check += 40;
+        *sum += cycle_counter * register;
+        *cycle_check += 40;
     }
     let screen_pixel = (cycle_counter % 40) as usize;
     if (screen_pixel == (*register as usize)) || (screen_pixel == (*register + 1) as usize) || (screen_pixel == (*register + 2) as usize) {
-        screen[((cycle_counter-1)) as usize] = "#";
+        screen[(cycle_counter-1) as usize] = "#";
     }
 }
 
@@ -24,7 +21,7 @@ pub fn solve_day_ten() {
     let mut screen = vec!["."; 240];
 
     for line in INPUT.lines() {
-        let exec = line.split(" ").collect::<Vec<&str>>();
+        let exec = line.split(' ').collect::<Vec<&str>>();
         // Beginning of cycle
         cycle(&cycle_counter, &mut cycle_check, &register, &mut sum, &mut screen);
 

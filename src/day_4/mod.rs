@@ -5,13 +5,13 @@ const INPUT_FILE: &str = "./inputs/day_4_input.txt";
 
 pub fn solve_day_four() {
     let input: Vec<Vec<u32>> = fs::read_to_string(INPUT_FILE).unwrap()
-        .split("\n")
+        .split('\n')
         .map(|line| {
-            line.replace("-", ",").split(",").map(|string| string.parse::<u32>().unwrap()).collect::<Vec<_>>()
+            line.replace('-', ",").split(',').map(|string| string.parse::<u32>().unwrap()).collect::<Vec<_>>()
         })
         .collect();
     part_one(input.clone());
-    part_two(input.clone());
+    part_two(input);
 }
 
 fn part_two(input: Vec<Vec<u32>>) {

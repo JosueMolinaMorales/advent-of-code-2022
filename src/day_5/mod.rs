@@ -12,20 +12,20 @@ pub fn solve_day_five() {
         vec!["Z", "L", "P", "H", "S", "C", "M", "V"],
         vec!["R", "P", "F", "L", "W", "G", "Z"]
     ];
-    part_one(&mut stacks);
+    part_one(&mut stacks.clone());
     part_two(&mut stacks);
 
 }
 
 fn part_one(stacks: &mut Vec<Vec<&str>>) {
     fs::read_to_string("./inputs/day_5_input.txt").unwrap()
-        .split("\n")
+        .split('\n')
         .for_each(|line| {
             let replaced_line = line
                 .replace("move ", "")
                 .replace(" from ", ",")
                 .replace(" to ", ",");
-            let numbers = replaced_line.split(",").map(|num| num.parse::<u32>().unwrap()).collect::<Vec<u32>>();
+            let numbers = replaced_line.split(',').map(|num| num.parse::<u32>().unwrap()).collect::<Vec<u32>>();
 
             let num_of_moves = numbers[0];
             let from = numbers[1]-1;
@@ -49,13 +49,13 @@ fn part_one(stacks: &mut Vec<Vec<&str>>) {
 
 fn part_two(stacks: &mut Vec<Vec<&str>>) {
     fs::read_to_string("./inputs/day_5_input.txt").unwrap()
-        .split("\n")
+        .split('\n')
         .for_each(|line| {
             let replaced_line = line
                 .replace("move ", "")
                 .replace(" from ", ",")
                 .replace(" to ", ",");
-            let numbers = replaced_line.split(",").map(|num| num.parse::<u32>().unwrap()).collect::<Vec<u32>>();
+            let numbers = replaced_line.split(',').map(|num| num.parse::<u32>().unwrap()).collect::<Vec<u32>>();
 
             let num_of_moves = numbers[0];
             let from = numbers[1]-1;

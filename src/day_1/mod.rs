@@ -5,7 +5,7 @@ const FILE_NAME_DAY_ONE: &str = "./inputs/day_1_input.txt";
 fn read_file() -> Vec<String> {
     let file = fs::read_to_string(FILE_NAME_DAY_ONE).unwrap();
 
-    let file_vec: Vec<String> = file.split("\n").map(|str| str.trim().to_string()).collect();
+    let file_vec: Vec<String> = file.split('\n').map(|str| str.trim().to_string()).collect();
 
     file_vec
 }
@@ -22,7 +22,7 @@ fn part_one(cal_str_vec: Vec<String>) {
         let mut sum_vec = vec![];
         let mut local_sum = 0;
         cal_str_vec.iter().for_each(|cal| {
-            if cal.len() == 0 {
+            if cal.is_empty() {
                 sum_vec.push(local_sum);
                 local_sum = 0;
             } else {
@@ -39,7 +39,7 @@ fn part_two(cal_str_vec: Vec<String>) {
     let mut sum_vec = vec![];
         let mut local_sum = 0;
         cal_str_vec.iter().for_each(|cal| {
-            if cal.len() == 0 {
+            if cal.is_empty() {
                 sum_vec.push(local_sum);
                 local_sum = 0;
             } else {
