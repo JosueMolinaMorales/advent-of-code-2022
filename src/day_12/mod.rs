@@ -12,9 +12,16 @@ const INPUT: &str = include_str!("day_12_input.txt");
 
 fn find_item(grid: &Vec<Vec<Point>>, item: String) -> Vec<(usize, usize)> {
     let mut res = vec![];
-    for (i, row) in grid.iter().enumerate() {
-        for (j, column) in row.iter().enumerate() {
-            if *column.character == item {
+    for row in grid.iter(){
+        for column in row.iter() {
+            let col_char = if column.character == "S" && item != "S" { 
+                "a".to_string() 
+            } else if column.character == "E" && item != "E" { 
+                "z".to_string() 
+            } else {
+                column.character.clone()
+            };
+            if col_char == item {
                 res.push(column.position);
             }
         }
@@ -32,20 +39,20 @@ fn get_adjacent_items(grid: &Vec<Vec<Point>>, vertex: (usize, usize)) -> Vec<(us
     let mut res: Vec<(usize, usize)> = vec![];
 
     // Top
-    if let Some(top_row) = grid.get((vertex.1 + 1)) {
-        if let Some(top_item) = top_row.get((vertex.0)) {
+    if let Some(top_row) = grid.get(vertex.1 + 1) {
+        if let Some(top_item) = top_row.get(vertex.0) {
             res.push(top_item.position);
         }
     }
 
     if let Some(current_row) = grid.get(vertex.1) {
         // Right
-        if let Some(right_item) = current_row.get((vertex.0 + 1)) {
+        if let Some(right_item) = current_row.get(vertex.0 + 1) {
             res.push(right_item.position);
         }
         // Left
         if vertex.0 != 0 {
-            if let Some(left_item) = current_row.get((vertex.0 - 1)) {
+            if let Some(left_item) = current_row.get(vertex.0 - 1) {
                 res.push(left_item.position)
             }
         }
@@ -53,8 +60,8 @@ fn get_adjacent_items(grid: &Vec<Vec<Point>>, vertex: (usize, usize)) -> Vec<(us
     
     // Bottom
     if vertex.1 != 0 {
-        if let Some(bottom_row) = grid.get((vertex.1 - 1)) {
-            if let Some(bottom_item) = bottom_row.get((vertex.0)) {
+        if let Some(bottom_row) = grid.get(vertex.1 - 1) {
+            if let Some(bottom_item) = bottom_row.get(vertex.0) {
                 res.push(bottom_item.position);
             }
         }
@@ -119,7 +126,7 @@ pub fn solve_day_twelve() {
     
             let adj = get_adjacent_items(&grid, v);
             for u in adj {
-                let mut adj_u = &grid[u.1][u.0];
+                let adj_u = &grid[u.1][u.0];
                 if !adj_u.explored {
                     grid[u.1][u.0].parent = Some(v);
                     grid[u.1][u.0].explored = true;
