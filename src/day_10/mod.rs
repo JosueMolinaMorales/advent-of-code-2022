@@ -14,11 +14,13 @@ fn cycle(cycle_counter: &i32, cycle_check: &mut i32, register: &i32, sum: &mut i
 }
 
 pub fn solve_day_ten() {
+    let current_time = std::time::Instant::now();
+
     let mut cycle_counter = 1;
     let mut register = 1;
     let mut cycle_check = 20;
     let mut sum = 0;
-    let mut screen = vec!["."; 240];
+    let mut screen = vec![" "; 240];
 
     for line in INPUT.lines() {
         let exec = line.split(' ').collect::<Vec<&str>>();
@@ -46,4 +48,5 @@ pub fn solve_day_ten() {
         print!("{}", pixel);
     }
     println!("\nsum: {}", sum);
+    println!("Elasped: {:.2?}", current_time.elapsed());
 }
