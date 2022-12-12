@@ -3,128 +3,149 @@ use std::collections::{VecDeque, HashSet};
 #[derive(Debug, Clone)]
 struct Point {
     character: String,
-    position: (u32, u32),
-    parent: Option<(u32, u32)>
+    position: (usize, usize),
+    parent: Option<(usize, usize)>,
+    explored: bool
 }
 
-const INPUT: &str = include_str!("test_input.txt");
+const INPUT: &str = include_str!("day_12_input.txt");
 
-fn find_item(grid: &Vec<Vec<Point>>, item: String) -> Option<(u32, u32)> {
+fn find_item(grid: &Vec<Vec<Point>>, item: String) -> Vec<(usize, usize)> {
+    let mut res = vec![];
     for (i, row) in grid.iter().enumerate() {
         for (j, column) in row.iter().enumerate() {
             if *column.character == item {
-                return Some(column.position);
+                res.push(column.position);
             }
         }
     }
-    None
+    res
 }
 
-fn get_adjacent_items(grid: &Vec<Vec<Point>>, vertex: (u32, u32)) -> Vec<(u32, u32)> {
-    let mut res: Vec<(u32, u32)> = vec![];
+/**
+ * A vertex, v, is adjacent to u, if and only if
+ *  - u is above, to the left, to the right, or below v by one space
+ *  - u.char is 1 above or equal to v.char
+ *  - u.char is strictly less than v.char
+ */
+fn get_adjacent_items(grid: &Vec<Vec<Point>>, vertex: (usize, usize)) -> Vec<(usize, usize)> {
+    let mut res: Vec<(usize, usize)> = vec![];
+
     // Top
-    if let Some(row) = grid.get(vertex.0 as usize) {
-        if let Some(item) = row.get((vertex.1 + 1) as usize) {
-            if 
-                grid[vertex.0 as usize][vertex.1 as usize].character.as_bytes()[0] + 1 == item.character.as_bytes()[0] ||
-                grid[vertex.0 as usize][vertex.1 as usize].character.as_bytes()[0] >= item.character.as_bytes()[0] || // Vertex is bigger than item
-                grid[vertex.0 as usize][vertex.1 as usize].character == "S".to_string() ||
-                (grid[vertex.0 as usize][vertex.1 as usize].character == "E".to_string() && item.character == "z")
-            {
-                // Item is one bigger than current vertex
-                res.push((vertex.0, vertex.1 + 1));
-            }
-        }
-    };
-    // Left
-    if vertex.0 != 0 {
-        if let Some(row) = grid.get((vertex.0 - 1) as usize) {
-            if let Some(item) = row.get((vertex.1) as usize) {
-                if 
-                    grid[vertex.0 as usize][vertex.1 as usize].character.as_bytes()[0] + 1 == item.character.as_bytes()[0] ||
-                    grid[vertex.0 as usize][vertex.1 as usize].character.as_bytes()[0] >= item.character.as_bytes()[0] || // Vertex is bigger than item
-                    grid[vertex.0 as usize][vertex.1 as usize].character == "S".to_string() ||
-                    (grid[vertex.0 as usize][vertex.1 as usize].character == "E".to_string() && item.character == "z")
-                {
-                    res.push((vertex.0 - 1, vertex.1));
-                }
-            }
-        }
-    }
-    // Right
-    if let Some(row) = grid.get((vertex.0 + 1) as usize) {
-        if let Some(item) = row.get(vertex.1 as usize) {
-            if 
-                grid[vertex.0 as usize][vertex.1 as usize].character.as_bytes()[0] + 1 == item.character.as_bytes()[0] ||
-                grid[vertex.0 as usize][vertex.1 as usize].character.as_bytes()[0] >= item.character.as_bytes()[0] || // Vertex is bigger than item
-                grid[vertex.0 as usize][vertex.1 as usize].character == "S".to_string() ||
-                (grid[vertex.0 as usize][vertex.1 as usize].character == "E".to_string() && item.character == "z")
-            {
-                res.push((vertex.0 + 1, vertex.1));
-            }
-        }
-    };
-    // Bottom
-    if vertex.1 != 0 {
-        if let Some(row) = grid.get(vertex.0 as usize) {
-            if let Some(item) = row.get((vertex.1 - 1) as usize) {
-                if 
-                    grid[vertex.0 as usize][vertex.1 as usize].character.as_bytes()[0] + 1 == item.character.as_bytes()[0] ||
-                    grid[vertex.0 as usize][vertex.1 as usize].character.as_bytes()[0] >= item.character.as_bytes()[0] || // Vertex is bigger than item
-                    grid[vertex.0 as usize][vertex.1 as usize].character == "S".to_string() ||
-                    (grid[vertex.0 as usize][vertex.1 as usize].character == "E".to_string() && item.character == "z")
-                {
-                    res.push((vertex.0, vertex.1 - 1));
-                }
-            }
+    if let Some(top_row) = grid.get((vertex.1 + 1)) {
+        if let Some(top_item) = top_row.get((vertex.0)) {
+            res.push(top_item.position);
         }
     }
 
-    res
+    if let Some(current_row) = grid.get(vertex.1) {
+        // Right
+        if let Some(right_item) = current_row.get((vertex.0 + 1)) {
+            res.push(right_item.position);
+        }
+        // Left
+        if vertex.0 != 0 {
+            if let Some(left_item) = current_row.get((vertex.0 - 1)) {
+                res.push(left_item.position)
+            }
+        }
+    }
+    
+    // Bottom
+    if vertex.1 != 0 {
+        if let Some(bottom_row) = grid.get((vertex.1 - 1)) {
+            if let Some(bottom_item) = bottom_row.get((vertex.0)) {
+                res.push(bottom_item.position);
+            }
+        }
+    }
+    // Validate all the adjacent items
+    let vertex_point = grid[vertex.1][vertex.0].clone();
+    let mut adj_vec = vec![];
+    for i in 0..res.len() {
+        let adj_point = grid[res[i].1][res[i].0].clone();
+        let adj_point_char = if adj_point.character == "E" { "z".to_string() } else { adj_point.character };
+        if vertex_point.character == "E" {
+            if adj_point_char == "z".to_string() {
+                adj_vec.push(adj_point.position);
+            }
+        } else if vertex_point.character == "S" {
+            if adj_point_char == "a".to_string() {
+                adj_vec.push(adj_point.position);
+            }
+        } else {
+            if 
+                vertex_point.character.as_bytes()[0] + 1 == adj_point_char.as_bytes()[0] ||
+                vertex_point.character.as_bytes()[0] >= adj_point_char.as_bytes()[0]
+            {
+                adj_vec.push(adj_point.position);
+            }
+        }
+    }
+    adj_vec
 }
 
 pub fn solve_day_twelve() {
     let mut grid: Vec<Vec<Point>> = vec![];
     let mut row_count = 0;
     let mut column_count = 0;
-    for line in INPUT.lines() {
+    let mut lines = INPUT.split("\n").collect::<Vec<&str>>();
+    lines.reverse();
+    for line in lines {
         let mut row: Vec<Point> = vec![];
         for char in line.chars() {
-            row.push(Point { character: char.to_string(), position: (column_count, row_count), parent: None});
+            row.push(Point { character: char.to_string(), position: (column_count, row_count), parent: None, explored: false});
             column_count += 1;
         }
         grid.push(row);
         row_count += 1;
         column_count = 0;
     }
-    println!("Grid: {:#?}", grid);
-    let start = find_item(&grid, "S".to_string()).unwrap();
-    println!("Adj to start: {:?}", get_adjacent_items(&grid, start));
-    let mut queue = VecDeque::new();
-    queue.push_front(start);
-    let mut visited = HashSet::new();
-    let mut count = 1;
-    // let mut found_counts = Vec::new();
-    while !queue.is_empty() {
-        let v = queue.pop_front().unwrap();
-        // println!("Current v: {:?} which is letter: {}", v, grid[v.0 as usize][v.1 as usize].character);
-        count += 1;
-        
-        let adj = get_adjacent_items(&grid, v);
-        for u in adj {
-            if !visited.contains(&u) {
-                grid[u.0 as usize][u.1 as usize].parent = Some(v);
-                visited.insert(u);
-                queue.push_back(u);
+
+    let start = find_item(&grid, "a".to_string());
+    let mut count_vec: Vec<u32> = vec![];
+    let fresh_grid = grid.clone();
+
+    for starting in start {
+        grid = fresh_grid.clone();
+        let mut queue = VecDeque::new();
+        grid[starting.1][starting.0].explored = true;
+        queue.push_front(starting);
+        while !queue.is_empty() {
+            let v = queue.pop_front().unwrap();
+            if grid[v.1][v.0].character == "E" {
+                break;
+            }
+    
+            let adj = get_adjacent_items(&grid, v);
+            for u in adj {
+                let mut adj_u = &grid[u.1][u.0];
+                if !adj_u.explored {
+                    grid[u.1][u.0].parent = Some(v);
+                    grid[u.1][u.0].explored = true;
+                    queue.push_back(u);
+                }
             }
         }
+
+        let end = find_item(&grid, "E".to_string()).last().unwrap().clone();
+        let mut count = 0;
+        let mut current_point = grid[end.1][end.0].clone();
+    
+        while let Some(parent) = current_point.parent {
+            count += 1;
+            current_point = grid[parent.1][parent.0].clone();
+        }
+    
+        if count != 0 {
+            println!("count: {}", count);
+            count_vec.push(count);
+        }
+
     }
-    println!("Grid: {:#?}", grid);
 
-    // let end = find_item(&grid, "E".to_string()).unwrap();
-    // println!("{:?}", end);
-    // let end = &grid[end.0 as usize][end.1 as usize];
-    // println!("parent: {:?}", grid[end.parent.unwrap().0 as usize][end.parent.unwrap().1 as usize]);
-
-    // println!("visited Array: {:?}", visited);
+    // get min count in vec
+    count_vec.sort();
+    println!("Min: {}", count_vec[0])
+    
 }
