@@ -1,4 +1,4 @@
-use std::collections::{VecDeque, HashSet};
+use std::collections::VecDeque;
 
 #[derive(Debug, Clone)]
 struct Point {
@@ -9,6 +9,25 @@ struct Point {
 }
 
 const INPUT: &str = include_str!("day_12_input.txt");
+
+fn parse_input() -> Vec<Vec<Point>> {
+    let mut grid: Vec<Vec<Point>> = vec![];
+    let mut row_count = 0;
+    let mut column_count = 0;
+    let mut lines = INPUT.split("\n").collect::<Vec<&str>>();
+    lines.reverse();
+    for line in lines {
+        let mut row: Vec<Point> = vec![];
+        for char in line.chars() {
+            row.push(Point { character: char.to_string(), position: (column_count, row_count), parent: None, explored: false});
+            column_count += 1;
+        }
+        grid.push(row);
+        row_count += 1;
+        column_count = 0;
+    }
+    grid
+}
 
 fn find_item(grid: &Vec<Vec<Point>>, item: String) -> Vec<(usize, usize)> {
     let mut res = vec![];
@@ -92,24 +111,10 @@ fn get_adjacent_items(grid: &Vec<Vec<Point>>, vertex: (usize, usize)) -> Vec<(us
     adj_vec
 }
 
-pub fn solve_day_twelve() {
-    let mut grid: Vec<Vec<Point>> = vec![];
-    let mut row_count = 0;
-    let mut column_count = 0;
-    let mut lines = INPUT.split("\n").collect::<Vec<&str>>();
-    lines.reverse();
-    for line in lines {
-        let mut row: Vec<Point> = vec![];
-        for char in line.chars() {
-            row.push(Point { character: char.to_string(), position: (column_count, row_count), parent: None, explored: false});
-            column_count += 1;
-        }
-        grid.push(row);
-        row_count += 1;
-        column_count = 0;
-    }
+fn bfs_climbing(starting_point: String) {
+    let mut grid = parse_input();
 
-    let start = find_item(&grid, "a".to_string());
+    let start = find_item(&grid, starting_point);
     let mut count_vec: Vec<u32> = vec![];
     let fresh_grid = grid.clone();
 
@@ -118,8 +123,7 @@ pub fn solve_day_twelve() {
         let mut queue = VecDeque::new();
         grid[starting.1][starting.0].explored = true;
         queue.push_front(starting);
-        while !queue.is_empty() {
-            let v = queue.pop_front().unwrap();
+        while let Some(v) = queue.pop_front() {
             if grid[v.1][v.0].character == "E" {
                 break;
             }
@@ -145,7 +149,7 @@ pub fn solve_day_twelve() {
         }
     
         if count != 0 {
-            println!("count: {}", count);
+            // println!("count: {}", count);
             count_vec.push(count);
         }
 
@@ -154,5 +158,13 @@ pub fn solve_day_twelve() {
     // get min count in vec
     count_vec.sort();
     println!("Min: {}", count_vec[0])
+}
+
+pub fn solve_day_twelve() {
+    // Part 1
+    bfs_climbing("S".to_string());
+    // Part 2
+    bfs_climbing("a".to_string());
+
     
 }
