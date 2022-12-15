@@ -79,13 +79,6 @@ pub fn solve_day_13() {
 }
 
 #[test]
-fn test_packet_equality() {
-    let left: Value = serde_json::from_str("[1,1,3,1,1]").unwrap();
-    let right: Value = serde_json::from_str("[1,1,3,1,1]").unwrap();
-    assert!(compare(&left, &right) == Some(Ordering::Equal));
-}
-
-#[test]
 fn test_packet_left_is_less_than() {
     let left: Value = serde_json::from_str("[1,1,3,1,1]").unwrap();
     let right: Value = serde_json::from_str("[1,1,5,1,1]").unwrap();
