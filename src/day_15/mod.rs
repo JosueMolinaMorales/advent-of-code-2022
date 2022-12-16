@@ -131,8 +131,7 @@ pub fn solve_day_15() {
             (points[0].parse::<isize>().unwrap(), points[1].parse::<isize>().unwrap())
         }).collect::<Vec<(isize, isize)>>()
     }).collect::<Vec<Vec<(isize, isize)>>>();
-    // part_one(&points);
-    // println!("Starting part two");
+    part_one(&points);
     part_two(&points);
     
 }
