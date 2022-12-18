@@ -28,7 +28,7 @@ const SQUARE: [[&str; 2]; 2] = [
     ["#", "#"],
 ];
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum Rocks {
     HorizontalLine,
     Plus,
@@ -99,8 +99,11 @@ pub fn solve_day_17() {
                             if (i + grid_height) >= grid.len() {
                                 break;
                             }
-                            if grid[i+grid_height][width_range.1] == "#" || grid[i+grid_height][width_range.1 + 1] == "#" {
-                                move_rock = false
+                            if 
+                                (*curr_rock == Rocks::Plus && (i == 0 || i == 2) && grid[i+grid_height][(width_range.0+width_range.1)/2 + 1] == "#") ||
+                                grid[i+grid_height][width_range.1 + 1] == "#"
+                            {
+                                move_rock = false;
                             }
                         }
                         if move_rock {
@@ -118,8 +121,11 @@ pub fn solve_day_17() {
                             if (i + grid_height) >= grid.len() {
                                 break;
                             }
-                            if grid[i+grid_height][width_range.0] == "#" || grid[i+grid_height][width_range.0 - 1] == "#" {
-                                move_rock = false
+                            if 
+                                (*curr_rock == Rocks::Plus && (i == 0 || i == 2) && grid[i+grid_height][(width_range.0+width_range.1)/2 - 1] == "#") ||
+                                grid[i+grid_height][width_range.0 - 1] == "#"
+                            {
+                                move_rock = false;
                             }
                         }
                         if move_rock {
