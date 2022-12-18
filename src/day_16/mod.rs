@@ -1,6 +1,6 @@
 use std::collections::{VecDeque, HashMap};
 
-const TEST_INPUT: &str = include_str!("test_input.txt");
+// const TEST_INPUT: &str = include_str!("test_input.txt");
 const INPUT: &str = include_str!("input_day_16.txt");
 #[derive(Debug, Clone)]
 struct Tunnel {
