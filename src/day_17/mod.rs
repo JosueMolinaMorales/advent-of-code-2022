@@ -7,9 +7,9 @@ const PLUS: [[&str; 3]; 3] = [
     [".", "#", "."],
 ];
 const L_SHAPE: [[&str; 3]; 3] = [
-    [".", ".", "#"],
-    [".", ".", "#"],
     ["#", "#", "#"],
+    [".", ".", "#"],
+    [".", ".", "#"],
 ];
 const THREE_HEIGHT_EMPTY: [[&str; 7]; 3] = [
     [".",".",".",".",".",".",".",],
@@ -26,6 +26,8 @@ const SQUARE: [[&str; 2]; 2] = [
     ["#", "#"],
     ["#", "#"],
 ];
+
+#[derive(Debug, Clone)]
 enum Rocks {
     HorizontalLine,
     Plus,
@@ -37,7 +39,8 @@ enum Rocks {
 impl Rocks {
     fn get_width(&self) -> usize {
         match *self {
-            Rocks::HorizontalLine | Rocks::VerticalLine => 4,
+            Rocks::HorizontalLine => 4,
+            Rocks::VerticalLine => 1,
             Rocks::Plus | Rocks::LShape => 3,
             Rocks::Square => 2,
         }
@@ -67,7 +70,7 @@ impl Rocks {
 */
 pub fn solve_day_17() {
     let mut grid: Vec<Vec<&str>> = THREE_HEIGHT_EMPTY.iter().map(|h| h.to_vec()).collect::<Vec<Vec<&str>>>();
-    print_grid(&grid);
+    // print_grid(&grid);
     let mut rock_count = 0;
     let mut gases_iter = TEST_INPUT.chars().into_iter().cycle();
     let rocks = vec![Rocks::HorizontalLine, Rocks::Plus, Rocks::LShape, Rocks::VerticalLine, Rocks::Square];
@@ -80,9 +83,9 @@ pub fn solve_day_17() {
         let curr_rock = rocks_iter.next().unwrap();
         let mut width_range: (usize, usize) = (2, 1+curr_rock.get_width());
         'falling: loop {
-            println!("width range: {:?}", width_range);
             // Then jet moves the rock
             let jet_move = gases_iter.next().unwrap();
+            println!("width range for {:?} is: {:?} and jet move is: {} and grid height is currently: {}", curr_rock, width_range, jet_move, grid_height);
             match jet_move {
                 '>' => {
                     if width_range.1 < 6 {
@@ -104,7 +107,7 @@ pub fn solve_day_17() {
             for r in width_range.0..=width_range.1 {
                 if grid_height == 0 || grid[grid_height-1][r] == "#" {
                     // Place rock
-                    println!("grid_height: {}, width range: {:?}", grid_height, width_range);
+                    // println!("grid_height: {}, width range: {:?}", grid_height, width_range);
                     // for i in curr_rock.get_rock_shape() {
                     //     for c in i.iter().enumerate() {
                     //         grid[width_range.0][c.0] = *c.1;
@@ -117,23 +120,39 @@ pub fn solve_day_17() {
             // else rock falls down
             grid_height -= 1;
         } 
-        for i in curr_rock.get_rock_shape() {
-            for c in i.iter().enumerate() {
-                grid[width_range.0][c.0] = *c.1;
+        for (i, cols) in curr_rock.get_rock_shape().iter().enumerate() {
+            for c in cols.iter().enumerate() {
+                grid[grid_height + i][width_range.0 + c.0] = *c.1;
             }
         }
         // Add three empty spaces for next fall
-        for empty in THREE_HEIGHT_EMPTY {
-            grid.push(empty.to_vec());
+       
+        // Add three empty Spaces above ground or highest rock
+        let height = get_height_of_rocks(&grid);
+        println!("get_height_of_rocks: {}", height);
+        for _ in height..height+1 {
+            grid.push([".",".",".",".",".",".",".",].to_vec());
         }
         print_grid(&grid);
+        println!("\n\n");
         // Rock has fallen, increase rock_count for next iteration
         rock_count += 1;
     }
 }
 
+fn get_height_of_rocks(grid: &Vec<Vec<&str>>) -> usize {
+    for (i, row) in grid.iter().enumerate() {
+        println!("{} -> {:?}", i, row);
+        if row.iter().any(|x| *x == ".") && i != 0{
+            // if the entire row contains '.' then the last row had at least one '#'
+            return i - 1
+        }
+    }
+    0
+}
+
 fn print_grid(grid: &Vec<Vec<&str>>) {
-    for i in grid {
+    for i in grid.iter().rev() {
         for j in i {
             print!("{}", j);
         }
