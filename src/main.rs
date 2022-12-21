@@ -16,6 +16,8 @@ pub mod day_15;
 pub mod day_16;
 pub mod day_17;
 
+pub mod day_20;
+
 fn main() {
     // day_1::solve_day_one();
     // day_2::solve_day_two();
@@ -34,4 +36,5 @@ fn main() {
     // day_15::solve_day_15();
     // day_16::solve_day_16()
     day_17::solve_day_17();
+    // day_20::solve_day_20();
 }

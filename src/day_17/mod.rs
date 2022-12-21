@@ -1,32 +1,23 @@
+use std::collections::HashSet;
 
-const TEST_INPUT: &str = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>";
-const INPUT: &str = include_str!("day_17_input.txt");
-const LINE: [&str; 4] = ["#", "#", "#", "#"];
-const PLUS: [[&str; 3]; 3] = [
-    [".", "#", "."],
-    ["#", "#", "#"],
-    [".", "#", "."],
-];
-const L_SHAPE: [[&str; 3]; 3] = [
-    ["#", "#", "#"],
-    [".", ".", "#"],
-    [".", ".", "#"],
-];
-const THREE_HEIGHT_EMPTY: [[&str; 7]; 3] = [
-    [".",".",".",".",".",".",".",],
-    [".",".",".",".",".",".",".",],
-    [".",".",".",".",".",".",".",],
-];
-const VERTICAL_LINE: [[&str; 1]; 4] = [
-    ["#"],
-    ["#"],
-    ["#"],
-    ["#"],
-];
-const SQUARE: [[&str; 2]; 2] = [
-    ["#", "#"],
-    ["#", "#"],
-];
+
+// const TEST_INPUT: &str =  // "><<<>><><<><><<<<<<<>><>>><<<>>>>>";
+const INPUT: &str = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>";//include_str!("day_17_input.txt");
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+enum Gas {
+    Right,
+    Left
+}
+impl Gas {
+    fn new(c: char) -> Gas {
+        match c {
+            '>' => Gas::Right,
+            '<' => Gas::Left,
+            _ => unreachable!()
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum Rocks {
@@ -55,141 +46,105 @@ impl Rocks {
             Rocks::Square => 2,
         }
     }
-    
-    fn get_rock_shape(&self) -> Vec<Vec<&str>> {
+
+    fn get_starting_positions(&self, h: usize) -> Vec<(usize, usize)> {
         match *self {
-            Rocks::HorizontalLine => vec![LINE.to_vec()],
-            Rocks::Plus => PLUS.iter().map(|h| h.to_vec()).collect::<Vec<Vec<&str>>>(),
-            Rocks::LShape => L_SHAPE.iter().map(|h| h.to_vec()).collect::<Vec<Vec<&str>>>(),
-            Rocks::VerticalLine => VERTICAL_LINE.iter().map(|h| h.to_vec()).collect::<Vec<Vec<&str>>>(),
-            Rocks::Square => SQUARE.iter().map(|h| h.to_vec()).collect::<Vec<Vec<&str>>>(),
+            Rocks::HorizontalLine => vec![
+                (2, h),
+                (3, h),
+                (4, h),
+                (5, h)
+            ],
+            Rocks::Plus => vec![
+                (3, h), // Bottom
+                (2, h+1),
+                (3, h+1),
+                (4, h+1),
+                (3, h+2) // top
+            ],
+            Rocks::LShape => vec![
+                (2, h),
+                (3, h),
+                (4, h),
+                (4, h+1),
+                (5, h+2)
+            ],
+            Rocks::VerticalLine => vec![
+                (2, h),
+                (2, h+1),
+                (2, h+2),
+                (2, h+3),
+            ],
+            Rocks::Square => vec![
+                (2, h),
+                (3, h),
+                (2, h+1),
+                (3, h+1)
+            ],
         }
     }
+
+    fn move_rock_right(&self, curr_pos: &mut Vec<(usize, usize)>, grid: &HashSet<(usize, usize)>) {
+        todo!()
+    }
+
+    fn move_rock_left(&self, curr_pos: &mut Vec<(usize, usize)>, grid: &HashSet<(usize, usize)>) {
+        todo!()
+    }
+
+    fn can_rock_move_down(&self, curr_pos: &Vec<(usize, usize)>, grid: &HashSet<(usize, usize)>) -> bool {
+        todo!()
+    }
+
+    fn move_rock_down(&self, curr_pos: &mut Vec<(usize, usize)>, grid: &HashSet<(usize, usize)>) {
+        todo!()
+    }
+
+    fn place_rock(&self, curr_pos: &Vec<(usize, usize)>, grid: &mut HashSet<(usize, usize)>) {
+        todo!()
+    }
+
 }
 /*
     Plus appears at (2, n) where n is current height
 */
 pub fn solve_day_17() {
-    let mut grid: Vec<Vec<&str>> = THREE_HEIGHT_EMPTY.iter().map(|h| h.to_vec()).collect::<Vec<Vec<&str>>>();
-    // print_grid(&grid);
+    let mut grid: HashSet<(usize, usize)> = HashSet::new(); // Will contain the points of all rocks
     let mut rock_count = 0;
-    let mut gases_iter = TEST_INPUT.chars().into_iter().cycle();
+    let mut gases_iter = INPUT.chars().map(|c| Gas::new(c) ).into_iter().cycle();
     let rocks = vec![Rocks::HorizontalLine, Rocks::Plus, Rocks::LShape, Rocks::VerticalLine, Rocks::Square];
     let mut rocks_iter = rocks.iter().cycle();
-    while rock_count < 2022 {
-        // Start falling down loop
-        // First get the height of the grid, this is where the rock will start
-        let mut grid_height = grid.len();
-        // Current rock falling
-        let curr_rock = rocks_iter.next().unwrap();
-        let mut width_range: (usize, usize) = (2, 1+curr_rock.get_width());
-        // print_grid(&grid);
+    while rock_count < 10 {
+        let current_rock = rocks_iter.next().unwrap();
+        let height = get_height_of_rocks(&grid) + 3 ; // Plus three since height will start 3 above the highest rock
+        let mut curr_pos = current_rock.get_starting_positions(height);
         'falling: loop {
-            // Then jet moves the rock
-            let jet_move = gases_iter.next().unwrap();
-            // println!("width range for {:?} is: {:?} and jet move is: {} and grid height is currently: {}", curr_rock, width_range, jet_move, grid_height);
-            match jet_move {
-                '>' => {
-                    //. Checks for right wall
-                    if width_range.1 < 6 {
-                        let mut move_rock = true;
-                        // Check to see if it will run into an already existing rock
-                        let rock_height = curr_rock.get_height();
-                        for i in 0..rock_height {
-                            if (i + grid_height) >= grid.len() {
-                                break;
-                            }
-                            if 
-                                (*curr_rock == Rocks::Plus && (i == 0 || i == 2) && grid[i+grid_height][(width_range.0+width_range.1)/2 + 1] == "#") ||
-                                grid[i+grid_height][width_range.1 + 1] == "#"
-                            {
-                                move_rock = false;
-                            }
-                        }
-                        if move_rock {
-                            width_range.1 += 1;
-                            width_range.0 += 1;
-                        }
-                    }
-                },
-                '<' => {
-                    if width_range.0 > 0 {
-                        let mut move_rock = true;
-                        // Check to see if it will run into an already existing rock
-                        let rock_height = curr_rock.get_height();
-                        for i in 0..rock_height {
-                            if (i + grid_height) >= grid.len() {
-                                break;
-                            }
-                            if 
-                                (*curr_rock == Rocks::Plus && (i == 0 || i == 2) && grid[i+grid_height][(width_range.0+width_range.1)/2 - 1] == "#") ||
-                                grid[i+grid_height][width_range.0 - 1] == "#"
-                            {
-                                move_rock = false;
-                            }
-                        }
-                        if move_rock {
-                            width_range.0 -= 1;
-                            width_range.1 -= 1;
-                        }
-                    }
-                },
-                _ => unreachable!()
-            }
-            // Check to see if there is a rock/floor right under the falling rock
-            // Need to check under each width index in width range
-            // If there is, leave rock there and break out of loop
-            for r in width_range.0..=width_range.1 {
-                if grid_height == 0 || grid[grid_height-1][r] == "#" {
-                    break 'falling;
-                }
+            // Starting dropping rocks
+            let gas = gases_iter.next().unwrap();
+            match gas {
+                Gas::Right => current_rock.move_rock_right(&mut curr_pos, &grid),
+                Gas::Left => current_rock.move_rock_left(&mut curr_pos, &grid),
             }
 
-            // else rock falls down
-            grid_height -= 1;
-        } 
-
-        for (i, cols) in curr_rock.get_rock_shape().iter().enumerate() {
-            for c in cols.iter().enumerate() {
-                // println!("current rock: {:?}, i: {}, c.0: {}, grid_height: {}, grid.len(): {}", curr_rock, i, c.0, grid_height, grid.len());
-                if grid_height + i >= grid.len() {
-                    for _ in 0..=((grid_height+i) - grid.len()) {
-                        grid.push([".",".",".",".",".",".",".",].to_vec())
-                    }
-                }
-                grid[grid_height + i][width_range.0 + c.0] = *c.1;
+            // Check below rock before stop
+            if !current_rock.can_rock_move_down(&mut curr_pos, &grid) {
+                break 'falling;
             }
         }
-        // Add three empty Spaces above ground or highest rock
-        let height = get_height_of_rocks(&grid);
-        for i in 1..=3 {
-            if height + i >= grid.len() {
-                grid.push([".",".",".",".",".",".",".",].to_vec());
-            } 
-        }
-        // Rock has fallen, increase rock_count for next iteration
-        rock_count += 1;
+        // Place rock
+        current_rock.place_rock(&curr_pos, &mut grid);
     }
-    print_grid(&grid);
-    println!("Height: {}", get_height_of_rocks(&grid));
+    
+    // println!("Height: {}", get_height_of_rocks(&grid));
     println!("Height of grid: {}", grid.len());
 }
 
-fn get_height_of_rocks(grid: &Vec<Vec<&str>>) -> usize {
-    for (i, row) in grid.iter().enumerate() {
-        if row.iter().all(|x| *x == ".") {
-            // if the entire row contains '.' then the last row had at least one '#'
-            return i - 1
+fn get_height_of_rocks(grid: &HashSet<(usize, usize)>) -> usize {
+    let mut max_y = 0;
+    grid.iter().for_each(|(_, y)| {
+        if *y > max_y {
+            max_y = *y
         }
-    }
-    grid.len() - 1
-}
-
-fn print_grid(grid: &Vec<Vec<&str>>) {
-    for i in grid.iter().rev() {
-        for j in i {
-            print!("{}", j);
-        }
-        println!()
-    }
+    });
+    max_y
 }
