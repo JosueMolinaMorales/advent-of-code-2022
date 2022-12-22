@@ -113,7 +113,7 @@ impl Rocks {
         }
         if can_move_left {
             for (x, _) in curr_pos {
-                *x += 1;
+                *x -= 1;
             }
         }
     }
