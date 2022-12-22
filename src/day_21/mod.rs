@@ -24,6 +24,10 @@ pub fn solve_day_21() {
     let human_yell = 0;
 }
 
+fn traverse_part_2<'a>(tree: &HashMap<&str, Node>, curr_node: &'a str) {
+    
+}
+
 fn traverse<'a>(tree: &HashMap<&str, Node>, curr_node: &'a str) -> isize {
     let node = tree.get(curr_node).unwrap();
     if let Some(num) = node.operation.parse::<isize>().ok() {
