@@ -85,15 +85,49 @@ impl Rocks {
     }
 
     fn move_rock_right(&self, curr_pos: &mut Vec<(usize, usize)>, grid: &HashSet<(usize, usize)>) {
-        todo!()
+        // When moving rock right, need to check that its x pos <= 6, also checking for other rocks
+        let mut can_move_right = true;
+        for (x, y) in curr_pos.iter() {
+            if *x + 1 == 7 || grid.contains(&(*x+1, *y)) {
+                // if grid contains (x+1, y) then there is already a rock in that position and it cannot move.
+                can_move_right = false;
+                break;
+            }
+        }
+        if can_move_right {
+            for (x, _) in curr_pos {
+                *x += 1;
+            }
+        }
     }
 
     fn move_rock_left(&self, curr_pos: &mut Vec<(usize, usize)>, grid: &HashSet<(usize, usize)>) {
-        todo!()
+        // When moving rock right, need to check that its x pos <= 6, also checking for other rocks
+        let mut can_move_left = true;
+        for (x, y) in curr_pos.iter() {
+            if *x as isize - 1 < 0 || grid.contains(&(*x-1, *y)) {
+                // if grid contains (x+1, y) then there is already a rock in that position and it cannot move.
+                can_move_left = false;
+                break;
+            }
+        }
+        if can_move_left {
+            for (x, _) in curr_pos {
+                *x += 1;
+            }
+        }
     }
 
     fn can_rock_move_down(&self, curr_pos: &Vec<(usize, usize)>, grid: &HashSet<(usize, usize)>) -> bool {
-        todo!()
+        let mut can_move_down = true;
+        for (x, y) in curr_pos.iter() {
+            if *y as isize - 1 < 0 || grid.contains(&(*x, *y-1)) {
+                // if grid contains (x+1, y) then there is already a rock in that position and it cannot move.
+                can_move_down = false;
+                break;
+            }
+        }
+        can_move_down
     }
 
     fn move_rock_down(&self, curr_pos: &mut Vec<(usize, usize)>, grid: &HashSet<(usize, usize)>) {
@@ -130,6 +164,9 @@ pub fn solve_day_17() {
             if !current_rock.can_rock_move_down(&mut curr_pos, &grid) {
                 break 'falling;
             }
+
+            // Rock can keep falling
+            current_rock.move_rock_down(&mut curr_pos, &grid);
         }
         // Place rock
         current_rock.place_rock(&curr_pos, &mut grid);
