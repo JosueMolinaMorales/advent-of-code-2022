@@ -4,6 +4,7 @@ use std::collections::{HashSet, HashMap};
 // const TEST_INPUT: &str =  // "><<<>><><<><><<<<<<<>><>>><<<>>>>>";
 const INPUT: &str = include_str!("day_17_input.txt");
 // const INPUT: &str = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>";
+const TRILLION: usize = 1_000_000_000_000;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum Gas {
@@ -130,7 +131,9 @@ impl Rocks {
 }
 
 pub fn solve_day_17() {
-    // solve_part_one();
+    solve_part_one();
+    // part 2
+    // same current rock, current push, last rock that fell.
     let mut grid: HashSet<(usize, usize)> = HashSet::new(); // Will contain the points of all rocks
     let mut rock_count = 0;
     let mut gases_iter = INPUT.chars().map(|c| Gas::new(c) ).into_iter().cycle();
@@ -138,15 +141,48 @@ pub fn solve_day_17() {
     let rocks = vec![Rocks::HorizontalLine, Rocks::Plus, Rocks::LShape, Rocks::VerticalLine, Rocks::Square];
     let mut rocks_iter = rocks.iter().cycle();
     let mut total_jets_used = 0;
-    // let mut iterations = HashSet::new();
-    while rock_count < 50_455 {
+    let mut cycle: HashSet<(usize, usize, Vec<Rocks>)> = HashSet::new(); // (Current Rock Index, Current Gas Index, The previous 10 rocks)
+    let mut previous_ten: Vec<Rocks> = vec![];
+    let mut found_cycle: Option<(usize, (usize, usize, Vec<Rocks>))> = None;
+    let mut height_reached: usize = 0;
+    let mut limit = 50_455;
+    while rock_count < limit {
         let current_rock = rocks_iter.next().unwrap();
         let height = get_height_of_rocks(&grid) + 3 ; // Plus three since height will start 3 above the highest rock
         let mut curr_pos = current_rock.get_starting_positions(height);
         let mut gases_for_rock = vec![];
+        if previous_ten.len() < 10 {
+            previous_ten.push(current_rock.clone());
+        } else {
+            let last = previous_ten.last().unwrap();
+            previous_ten = vec![last.clone()];
+        }
         'falling: loop {
             // Starting dropping rocks
             let gas = gases_iter.next().unwrap();
+            if previous_ten.len() == 10 {
+                if !cycle.insert((rock_count % 5, total_jets_used % gases_length, previous_ten.clone())) && rock_count > 2022 {
+                    if let Some(found_cycle) = found_cycle.as_ref() {
+                        if found_cycle.1 == (rock_count % 5, total_jets_used % gases_length, previous_ten.clone()) {
+                            // This same formation has been found
+                            let curr_height = get_height_of_rocks(&grid);
+                            println!("curr_height: {}", curr_height);
+                            
+                            let last_height = found_cycle.0;
+                            println!("Last height: {}", last_height);
+                            let height_diff = curr_height - last_height;
+                            let iterations_left = TRILLION / 3_490;
+                            height_reached = height_diff * iterations_left;
+                            let iterations_left = TRILLION - (3_490 * iterations_left);
+                            rock_count = 0;
+                            limit = iterations_left;
+                        }
+                    } else {
+                        println!("rock count: {}, current height: {}, inserted: {:?}", rock_count, get_height_of_rocks(&grid), (rock_count % 5, total_jets_used % gases_length, previous_ten.clone()));
+                        found_cycle = Some((get_height_of_rocks(&grid), (rock_count % 5, total_jets_used % gases_length, previous_ten.clone())))
+                    }
+                }
+            }
             match gas {
                 Gas::Right => current_rock.move_rock_right(&mut curr_pos, &grid),
                 Gas::Left => current_rock.move_rock_left(&mut curr_pos, &grid),
@@ -160,61 +196,17 @@ pub fn solve_day_17() {
 
             // Rock can keep falling
             current_rock.move_rock_down(&mut curr_pos);
-            // if !iterations.insert((rocks.iter().position(|p| *p == *current_rock).unwrap(), total_jets_used % gases_length)) {
-            //     println!("potentional cycle found at rock count: {}", rock_count);
-            //     // break;
-            // }
-            // println!("Rock count: {}, rock index: {}, jet index: {}", rock_count, rocks.iter().position(|p| *p == *current_rock).unwrap(), total_jets_used & gases_length);
-    
+           
         }
-        // Check for cycle
         // Place rock
         current_rock.place_rock(&curr_pos, &mut grid);
         rock_count += 1;
     }
-    // 1 trill /  50_455 = 19_819_641
-    // 50_455 * 19_819_641 = 999_999_998_504
-    // 1 trill - 999_999_998_504 = 13_345
-    // 50 455 iterations have happened, 
-    let mut heights = get_height_of_rocks(&grid) * 19_819_642;
 
-    // run algorithm again but just for 13_345
-    let mut grid: HashSet<(usize, usize)> = HashSet::new(); // Will contain the points of all rocks
-    let mut rock_count = 0;
-    // let mut gases_iter = INPUT.chars().map(|c| Gas::new(c) ).into_iter().cycle();
-    let gases_length = INPUT.len();
-    // let rocks = vec![Rocks::HorizontalLine, Rocks::Plus, Rocks::LShape, Rocks::VerticalLine, Rocks::Square];
-    // let mut rocks_iter = rocks.iter().cycle();
-    let mut total_jets_used = 0;
-    while rock_count < 13_345 {
-        let current_rock = rocks_iter.next().unwrap();
-        let height = get_height_of_rocks(&grid) + 3 ; // Plus three since height will start 3 above the highest rock
-        let mut curr_pos = current_rock.get_starting_positions(height);
-        let mut gases_for_rock = vec![];
-        'falling2: loop {
-            // Starting dropping rocks
-            let gas = gases_iter.next().unwrap();
-            match gas {
-                Gas::Right => current_rock.move_rock_right(&mut curr_pos, &grid),
-                Gas::Left => current_rock.move_rock_left(&mut curr_pos, &grid),
-            }
-            total_jets_used += 1;
-            gases_for_rock.push(gas);
-            // Check below rock before stop
-            if !current_rock.can_rock_move_down(&mut curr_pos, &grid) {
-                break 'falling2;
-            }
+    println!("\nget_height_of_rock: {}", get_height_of_rocks(&grid));
+    println!("height_reached: {}", height_reached);
+    let heights = get_height_of_rocks(&grid) + height_reached;
 
-            // Rock can keep falling
-            current_rock.move_rock_down(&mut curr_pos);
-        }
-        // Check for cycle
-        // Place rock
-        current_rock.place_rock(&curr_pos, &mut grid);
-        rock_count += 1;
-        // println!("Rock count: {}, rock index: {}, jet index: {}", rock_count, rocks.iter().position(|p| *p == *current_rock).unwrap(), total_jets_used & gases_length);
-    }
-    heights += get_height_of_rocks(&grid);
     println!("Height prt 2: {}", heights);
 
 }
