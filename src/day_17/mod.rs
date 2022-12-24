@@ -1,9 +1,6 @@
-use std::collections::{HashSet, HashMap};
+use std::collections::HashSet;
 
-
-// const TEST_INPUT: &str =  // "><<<>><><<><><<<<<<<>><>>><<<>>>>>";
 const INPUT: &str = include_str!("day_17_input.txt");
-// const INPUT: &str = ">>><<><>><<<>><>>><<<>>><<<><<<>><>><<>>";
 const TRILLION: usize = 1_000_000_000_000;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -143,7 +140,7 @@ pub fn solve_day_17() {
     let mut total_jets_used = 0;
     let mut cycle: HashSet<(usize, usize, Vec<Rocks>)> = HashSet::new(); // (Current Rock Index, Current Gas Index, The previous 10 rocks)
     let mut previous_ten: Vec<Rocks> = vec![];
-    let mut found_cycle: Option<(usize, (usize, usize, Vec<Rocks>))> = None;
+    let mut found_cycle: Option<(usize, (usize, usize, Vec<Rocks>), usize)> = None; // Height of rocks, (rock count, gas len, previous 10), rock count
     let mut height_reached: usize = 0;
     let mut limit = 50_455;
     while rock_count < limit {
@@ -166,20 +163,18 @@ pub fn solve_day_17() {
                         if found_cycle.1 == (rock_count % 5, total_jets_used % gases_length, previous_ten.clone()) {
                             // This same formation has been found
                             let curr_height = get_height_of_rocks(&grid);
-                            println!("curr_height: {}", curr_height);
-                            
+                            let prev_rock_count = found_cycle.2;
+                            let rock_count_diff = rock_count - prev_rock_count;
                             let last_height = found_cycle.0;
-                            println!("Last height: {}", last_height);
                             let height_diff = curr_height - last_height;
-                            let iterations_left = TRILLION / 3_490;
+                            let iterations_left = TRILLION / rock_count_diff;
                             height_reached = height_diff * iterations_left;
-                            let iterations_left = TRILLION - (3_490 * iterations_left);
+                            let iterations_left = TRILLION - (rock_count_diff * iterations_left);
                             rock_count = 0;
                             limit = iterations_left;
                         }
                     } else {
-                        println!("rock count: {}, current height: {}, inserted: {:?}", rock_count, get_height_of_rocks(&grid), (rock_count % 5, total_jets_used % gases_length, previous_ten.clone()));
-                        found_cycle = Some((get_height_of_rocks(&grid), (rock_count % 5, total_jets_used % gases_length, previous_ten.clone())))
+                        found_cycle = Some((get_height_of_rocks(&grid), (rock_count % 5, total_jets_used % gases_length, previous_ten.clone()), rock_count))
                     }
                 }
             }
@@ -202,10 +197,7 @@ pub fn solve_day_17() {
         current_rock.place_rock(&curr_pos, &mut grid);
         rock_count += 1;
     }
-
-    println!("\nget_height_of_rock: {}", get_height_of_rocks(&grid));
-    println!("height_reached: {}", height_reached);
-    let heights = get_height_of_rocks(&grid) + height_reached;
+    let heights = get_height_of_rocks(&grid) + height_reached - (2 *found_cycle.unwrap().0);
 
     println!("Height prt 2: {}", heights);
 
